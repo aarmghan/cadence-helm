@@ -21,6 +21,20 @@ spec:
         app: cadence
         component: {{ $service }}
     spec:
+      initContainers:
+        - name: check-postgres-service
+          image: busybox
+          command:
+            - sh
+            - '-c'
+            - >-
+              until nslookup $DB_HOST; do echo waiting for postgres service; sleep 1; done;
+          env:
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: rds-config
+                  key: db_host
       containers:
         - name: cadence-{{ $service }}
           image: {{ $serviceCfg.image.repository }}:{{ $serviceCfg.image.tag }}
