@@ -3,30 +3,35 @@ log:
   stdout: true
   level: "debug"
 
-cassandra:
-  # -- External Cassandra endpoint to connect to. Required when cassandra.deployment.enabled is set to false
-  endpoint: ""
-  schema:
-    # -- Cassandra schema version of the Cadence keyspace to use. Latest value can be found at https://github.com/uber/cadence/blob/master/schema/cassandra/version.go
-    version: 0.37
-    # -- Cassandra schema version of the Cadence visibility keyspace to use. Latest value can be found at https://github.com/uber/cadence/blob/master/schema/cassandra/version.go
-    visibility_version: 0.9
-  deployment:
-    # -- When enabled, a single instance Cassandra will be deployed as part of the Helm chart
-    # -- When disabled, the Cassandra deployment is expected to be provided externally. For production use cases, it is recommended to use an external Cassandra deployment.
-    enabled: true
-    image:
-      repository: "cassandra"
-      tag: "4.1.1"
-    cpu:
-      limit: "500m"
-      request: "500m"
-    memory:
-      limit: "1Gi"
-      request: "1Gi"
+# cassandra:
+#   # -- External Cassandra endpoint to connect to. Required when cassandra.deployment.enabled is set to false
+#   endpoint: ""
+#   schema:
+#     # -- Cassandra schema version of the Cadence keyspace to use. Latest value can be found at https://github.com/uber/cadence/blob/master/schema/cassandra/version.go
+#     version: 0.37
+#     # -- Cassandra schema version of the Cadence visibility keyspace to use. Latest value can be found at https://github.com/uber/cadence/blob/master/schema/cassandra/version.go
+#     visibility_version: 0.9
+#   deployment:
+#     # -- When enabled, a single instance Cassandra will be deployed as part of the Helm chart
+#     # -- When disabled, the Cassandra deployment is expected to be provided externally. For production use cases, it is recommended to use an external Cassandra deployment.
+#     enabled: true
+#     image:
+#       repository: "cassandra"
+#       tag: "4.1.1"
+#     cpu:
+#       limit: "500m"
+#       request: "500m"
+#     memory:
+#       limit: "1Gi"
+#       request: "1Gi"
 
-
-
+postgresql:
+  # -- External PostgreSQL endpoint to connect to.
+  endpoint: "your-postgresql-endpoint"
+  user: "your-username"
+  password: "your-password"
+  database: "cadence"
+  visibility_database: "cadence_visibility"
 
 frontend:
   # -- Tchannel port of cadence frontend service. DO NOT CHANGE
