@@ -21,24 +21,6 @@ spec:
         app: cadence
         component: {{ $service }}
     spec:
-      initContainers:
-        - name: wait-for-schema
-          image: {{ $serviceCfg.image.repository }}:{{ $serviceCfg.image.tag }}
-          imagePullPolicy: Always
-          command: ["sh", "-c", "
-      until cqlsh $CASSANDRA_ENDPOINT 9042 -e \"
-        USE cadence;
-        SELECT curr_version FROM schema_version WHERE keyspace_name = 'cadence';\" | grep -q {{ $.Values.cassandra.schema.version }} &&
-      cqlsh  $CASSANDRA_ENDPOINT 9042 -e \"
-        USE cadence_visibility;
-        SELECT curr_version FROM schema_version WHERE keyspace_name = 'cadence_visibility';\" | grep -q {{ $.Values.cassandra.schema.visibility_version }};
-      do
-        echo waiting for both cadence and cadence_visibility schema setup;
-        sleep 10;
-      done"]
-          env:
-            - name: CASSANDRA_ENDPOINT
-              value: {{ include "cassandra.endpoint" $dot }}
       containers:
         - name: cadence-{{ $service }}
           image: {{ $serviceCfg.image.repository }}:{{ $serviceCfg.image.tag }}
@@ -50,15 +32,11 @@ spec:
             - name: metrics
               containerPort: 9090
               protocol: TCP
-             {{- if ne $service "worker" }}
+            {{- if ne $service "worker" }}
             - name: grpc
               containerPort: {{ $serviceCfg.grpcPort }}
               protocol: TCP
             {{- end}}
-          volumeMounts:
-            - name: config
-              mountPath: /etc/cadence/config/dynamicconfig/config.yaml
-              subPath: dynamic_config.yaml
           env:
             - name: SERVICES
               value: {{ $service }}
@@ -68,8 +46,18 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
-            - name: CASSANDRA_SEEDS
-              value:  {{ include "cassandra.endpoint" $dot }}
+            - name: DB
+              value: "postgres"
+            - name: POSTGRESQL_SEEDS
+              value: {{ $.Values.postgresql.endpoint }}
+            - name: POSTGRESQL_USER
+              value: {{ $.Values.postgresql.user }}
+            - name: POSTGRESQL_PASSWORD
+              value: {{ $.Values.postgresql.password }}
+            - name: POSTGRESQL_DATABASE
+              value: {{ $.Values.postgresql.database }}
+            - name: POSTGRESQL_VISIBILITY_DATABASE
+              value: {{ $.Values.postgresql.visibility_database }}
             - name: PROMETHEUS_ENDPOINT
               value: :9090
             - name: DYNAMIC_CONFIG_FILE_PATH
